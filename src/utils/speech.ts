@@ -4,54 +4,61 @@ const LANG_CODES: Record<Language, string> = {
   english: 'en-US', german: 'de-DE', russian: 'ru-RU', french: 'fr-FR', japanese: 'ja-JP'
 };
 
-let voiceCache: SpeechSynthesisVoice[] = [];
+// 语音缓存，第一次用户点击时才加载
+let voices: SpeechSynthesisVoice[] | null = null;
+let voicesLoaded = false;
 
-function initVoices() {
-  if (!('speechSynthesis' in window)) return;
-  try {
-    voiceCache = window.speechSynthesis.getVoices();
-    if (voiceCache.length > 0) return;
-    const dummy = new SpeechSynthesisUtterance('');
-    dummy.volume = 0;
-    window.speechSynthesis.speak(dummy);
-  } catch {}
+function ensureVoices(): SpeechSynthesisVoice[] {
+  if (!voicesLoaded && 'speechSynthesis' in window) {
+    voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) voicesLoaded = true;
+  }
+  return voices || [];
 }
 
+// 页面加载后异步拉取语音列表
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.addEventListener('voiceschanged', () => {
-    voiceCache = window.speechSynthesis.getVoices();
+    voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) voicesLoaded = true;
   });
+  // 部分浏览器需要主动触发
+  window.speechSynthesis.getVoices();
 }
-initVoices();
+
+function pickVoice(lang: Language): SpeechSynthesisVoice | null {
+  const list = ensureVoices();
+  if (list.length === 0) return null;
+  const code = LANG_CODES[lang];
+  return list.find(v => v.lang === code)
+      || list.find(v => v.lang.startsWith(code))
+      || list.find(v => v.lang.startsWith(code.split('-')[0]))
+      || null;
+}
 
 export function speak(text: string, language: Language) {
   if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
+  // 关键：永远不在 speak 前调 cancel。让浏览器自己管理队列
   const u = new SpeechSynthesisUtterance(text);
   u.lang = LANG_CODES[language];
-  u.rate = 0.85; u.pitch = 1; u.volume = 1;
-  loadVoice(u, language);
+  u.rate = 0.85;
+  u.pitch = 1;
+  u.volume = 1;
+  const voice = pickVoice(language);
+  if (voice) u.voice = voice;
   window.speechSynthesis.speak(u);
 }
 
 export function speakWord(word: string, language?: Language) {
   if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(word);
-  if (language) { u.lang = LANG_CODES[language]; loadVoice(u, language); }
-  u.rate = 0.75; u.pitch = 1; u.volume = 1;
-  window.speechSynthesis.speak(u);
-}
-
-function loadVoice(utterance: SpeechSynthesisUtterance, language: Language) {
-  if (voiceCache.length === 0 && 'speechSynthesis' in window) {
-    voiceCache = window.speechSynthesis.getVoices();
+  if (language) {
+    u.lang = LANG_CODES[language];
+    const voice = pickVoice(language);
+    if (voice) u.voice = voice;
   }
-  if (voiceCache.length === 0) return;
-  const code = LANG_CODES[language];
-  const match = voiceCache.find(v => v.lang === code)
-             || voiceCache.find(v => v.lang.startsWith(code))
-             || voiceCache.find(v => v.lang.startsWith(code.split('-')[0]))
-             || null;
-  if (match) utterance.voice = match;
+  u.rate = 0.75;
+  u.pitch = 1;
+  u.volume = 1;
+  window.speechSynthesis.speak(u);
 }
