@@ -1,0 +1,21 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# Android（可重新生成：npx cap add android && npx cap sync）
+android/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 环境变量
+.env
+.env.local

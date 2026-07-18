@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗣️</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#3b82f6" />
+    <title>语聚 - 语言学习闯关</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              cartoon: {
+                pink: '#FF6B9D',
+                blue: '#4ECDC4',
+                yellow: '#FFE66D',
+                purple: '#A78BFA',
+                orange: '#FF8C42',
+                green: '#6BCB77',
+              }
+            },
+            animation: {
+              'bounce-slow': 'bounce 2s infinite',
+              'shake': 'shake 0.5s ease-in-out',
+              'float': 'float 3s ease-in-out infinite',
+              'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+            },
+            keyframes: {
+              shake: {
+                '0%, 100%': { transform: 'translateX(0)' },
+                '25%': { transform: 'translateX(-5px)' },
+                '75%': { transform: 'translateX(5px)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              heartbeat: {
+                '0%, 100%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.2)' },
+              },
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-white dark:bg-gray-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
